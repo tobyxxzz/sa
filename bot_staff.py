@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord import PermissionOverwrite
 from datetime import timedelta
 
 intents = discord.Intents.default()
@@ -268,7 +269,11 @@ async def slash_lock(interaction: discord.Interaction, canal: discord.TextChanne
         canal = interaction.channel
     
     try:
-        await canal.set_permissions(interaction.guild.default_role, send_messages=False)
+        overwrite = canal.overwrites.get(interaction.guild.default_role)
+        if overwrite is None:
+            overwrite = PermissionOverwrite()
+        overwrite.send_messages = False
+        await canal.set_permissions(interaction.guild.default_role, overwrite=overwrite)
         embed = discord.Embed(
             title="Canal Trancado",
             description=f"{canal.mention} foi trancado",
@@ -293,7 +298,11 @@ async def slash_unlock(interaction: discord.Interaction, canal: discord.TextChan
         canal = interaction.channel
     
     try:
-        await canal.set_permissions(interaction.guild.default_role, send_messages=True)
+        overwrite = canal.overwrites.get(interaction.guild.default_role)
+        if overwrite is None:
+            overwrite = PermissionOverwrite()
+        overwrite.send_messages = None
+        await canal.set_permissions(interaction.guild.default_role, overwrite=overwrite)
         embed = discord.Embed(
             title="Canal Destrancado",
             description=f"{canal.mention} foi destrancado",
